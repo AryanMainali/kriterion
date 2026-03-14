@@ -35,11 +35,9 @@ RUN addgroup --system app && adduser --system --group app
 # Copy application
 COPY . .
 
-# Create uploads directory
-RUN mkdir -p /tmp/kriterion/uploads
-
-# Change ownership of directories to the new user
-RUN chown -R app:app /app /tmp/kriterion/uploads
+# Create required runtime directories (as root), then grant ownership to app user
+RUN mkdir -p /tmp/kriterion/uploads /tmp/kriterion/submissions /tmp/kriterion/temp \
+    && chown -R app:app /app /tmp/kriterion
 
 # Switch to the non-root user
 USER app
