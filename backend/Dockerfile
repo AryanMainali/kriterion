@@ -29,14 +29,22 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create a non-root user and group for better security
+RUN addgroup --system app && adduser --system --group app
+
 # Copy application
 COPY . .
 
 # Create uploads directory
 RUN mkdir -p /tmp/kriterion/uploads
 
+# Change ownership of directories to the new user
+RUN chown -R app:app /app /tmp/kriterion/uploads
+
+# Switch to the non-root user
+USER app
+
 # Expose port
 EXPOSE 8000
 
-# Run application with migrations
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
