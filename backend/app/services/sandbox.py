@@ -135,7 +135,11 @@ class SandboxExecutor:
             return f"mcs -out:program.exe {cs_file} && mono program.exe {a}".strip()
         
         return "echo 'Unsupported language'"
-    
+
+    def get_exec_command(self, language: str, code_path: str, command_args: Optional[str] = None) -> str:
+        """Public: return shell command to run code (for interactive execution)."""
+        return self._get_exec_command(language, code_path, command_args)
+
     def _run_in_docker(
         self,
         command: str,
@@ -144,7 +148,10 @@ class SandboxExecutor:
     ) -> Dict[str, Any]:
         if os.path.exists("/.dockerenv"):
             return self._run_local(command, code_path, stdin_input)
-        
+
+        if shutil.which("docker") is None:
+            return self._run_local(command, code_path, stdin_input)
+
         if settings.ENVIRONMENT == "development":
             return self._run_local(command, code_path, stdin_input)
         
